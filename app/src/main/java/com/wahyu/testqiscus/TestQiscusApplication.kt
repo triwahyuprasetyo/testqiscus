@@ -11,5 +11,4 @@ class TestQiscusApplication : Application() {
         super.onCreate()
         QiscusCore.setup(this, APPID)
     }
-
 }
