@@ -5,6 +5,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.qiscus.sdk.chat.core.QiscusCore
 import com.qiscus.sdk.chat.core.data.model.QiscusAccount
+import com.wahyu.testqiscus.ConstantVariable.SUCCESS
+import com.wahyu.testqiscus.ConstantVariable.USERKEY
 
 class LoginViewModel : ViewModel() {
 
@@ -15,13 +17,13 @@ class LoginViewModel : ViewModel() {
     }
 
     fun login(email: String, displayName: String) {
-        QiscusCore.setUser(email, "qiscuschat101")
+        QiscusCore.setUser(email, USERKEY)
             .withUsername(displayName)
             .withAvatarUrl("")
             .withExtras(null)
             .save(object : QiscusCore.SetUserListener {
                 override fun onSuccess(success: QiscusAccount?) {
-                    status.postValue("success")
+                    status.postValue(SUCCESS)
                 }
 
                 override fun onError(error: Throwable?) {

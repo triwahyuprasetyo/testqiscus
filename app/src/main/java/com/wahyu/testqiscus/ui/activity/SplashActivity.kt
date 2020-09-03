@@ -5,11 +5,12 @@ import android.os.Bundle
 import android.os.CountDownTimer
 import androidx.appcompat.app.AppCompatActivity
 import com.qiscus.sdk.chat.core.QiscusCore
+import com.wahyu.testqiscus.ConstantVariable.SPLASH_TIME
 import com.wahyu.testqiscus.R
 import com.wahyu.testqiscus.Utils
 
 class SplashActivity : AppCompatActivity() {
-    val SPLASH_TIME: Long = 1500
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)

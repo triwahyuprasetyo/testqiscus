@@ -2,10 +2,9 @@ package com.wahyu.testqiscus
 
 import android.app.Application
 import com.qiscus.sdk.chat.core.QiscusCore
+import com.wahyu.testqiscus.ConstantVariable.APPID
 
 class TestQiscusApplication : Application() {
-
-    private val APPID: String = "sdksample"
 
     override fun onCreate() {
         super.onCreate()

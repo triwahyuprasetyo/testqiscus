@@ -6,6 +6,8 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
+import com.wahyu.testqiscus.ConstantVariable.MINIMUM_CHAR
+import com.wahyu.testqiscus.ConstantVariable.SUCCESS
 import com.wahyu.testqiscus.R
 import com.wahyu.testqiscus.viewmodel.LoginViewModel
 import kotlinx.android.synthetic.main.activity_login.*
@@ -17,7 +19,7 @@ class LoginActivity : AppCompatActivity() {
 
         val model: LoginViewModel by viewModels()
         model.getStatus().observe(this, Observer<String> {
-            if (it.equals("success")) {
+            if (it.equals(SUCCESS)) {
                 gotoMain()
             } else {
                 showToast(it)
@@ -28,7 +30,7 @@ class LoginActivity : AppCompatActivity() {
         buttonLogin.setOnClickListener {
             val email: String = textInputEditTextEmail.text.toString().trim()
             val displayName: String = textInputEditTextDisplayName.text.toString().trim()
-            if (email.length > 3 && displayName.length > 3) {
+            if (email.length > MINIMUM_CHAR && displayName.length > MINIMUM_CHAR) {
                 model.login(email, displayName)
             } else {
                 showToast(getString(R.string.login_alert))
