@@ -3,32 +3,26 @@ package com.wahyu.testqiscus.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.qiscus.sdk.chat.core.QiscusCore
-import com.qiscus.sdk.chat.core.data.model.QiscusAccount
-import com.wahyu.testqiscus.ConstantVariable.SUCCESS
-import com.wahyu.testqiscus.ConstantVariable.USERKEY
+import com.wahyu.testqiscus.TestQiscusRepository
 
 class LoginViewModel : ViewModel() {
 
     private var status = MutableLiveData<String>()
+    private var repository: TestQiscusRepository = TestQiscusRepository()
 
     fun getStatus(): LiveData<String> {
         return status
     }
 
     fun login(email: String, displayName: String) {
-        QiscusCore.setUser(email, USERKEY)
-            .withUsername(displayName)
-            .withAvatarUrl("")
-            .withExtras(null)
-            .save(object : QiscusCore.SetUserListener {
-                override fun onSuccess(success: QiscusAccount?) {
-                    status.postValue(SUCCESS)
-                }
+        repository.getStatusLogin(email, displayName, object : OnStatusReady {
+            override fun OnStatus(st: String) {
+                status.postValue(st)
+            }
+        })
+    }
 
-                override fun onError(error: Throwable?) {
-                    status.postValue(error?.message.toString())
-                }
-            })
+    interface OnStatusReady {
+        fun OnStatus(status: String)
     }
 }
