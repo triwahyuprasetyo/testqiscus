@@ -2,13 +2,13 @@ package com.wahyu.testqiscus.ui.fragment
 
 import android.content.Context
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.add
 import androidx.fragment.app.commit
+import com.qiscus.sdk.chat.core.QiscusCore
 import com.wahyu.testqiscus.R
 import kotlinx.android.synthetic.main.fragment_chat_list.view.*
 
@@ -34,7 +34,30 @@ class ChatListFragment : Fragment() {
                 addToBackStack(null)
             }
         }
+
+        (activity as AppCompatActivity?)!!.setSupportActionBar(view.toolbar)
+        view.toolbar.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.action_logout -> {
+                    QiscusCore.clearUser()
+                    (activity as AppCompatActivity?)!!.finish()
+                }
+            }
+            true
+        }
+
         return view
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.toolbar_menu, menu)
+        super.onCreateOptionsMenu(menu, inflater)
     }
 
 }

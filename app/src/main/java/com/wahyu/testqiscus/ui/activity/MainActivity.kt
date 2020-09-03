@@ -23,28 +23,7 @@ class MainActivity : AppCompatActivity() {
                 add<ChatListFragment>(R.id.fragment_container, "", intent.extras)
             }
         }
-
-        /*println("checkkkkk 1 : "+QiscusCore.hasSetupUser())
-//        initQiscus()
-        QiscusCore.clearUser();
-        println("checkkkkk 2 : "+QiscusCore.hasSetupUser())*/
-
     }
 
-    /*private fun initQiscus() {
-        QiscusCore.setUser("triwahyuprasetyo@gmail.com", "qiscuschat101")
-                .withUsername("triwahyuprasetyo")
-                .withAvatarUrl("")
-                .withExtras(null)
-                .save(object : QiscusCore.SetUserListener {
-                    override fun onSuccess(p0: QiscusAccount?) {
-                        println("okayyy yessssss")
-                    }
-
-                    override fun onError(p0: Throwable?) {
-                        println("okayyy nooooooo")
-                    }
-                })
-    }*/
 }
 
