@@ -1,23 +1,37 @@
-package com.wahyu.testqiscus
+package com.wahyu.testqiscus.ui.activity
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.qiscus.sdk.chat.core.QiscusCore
-import com.qiscus.sdk.chat.core.data.model.QiscusAccount
+import androidx.fragment.app.add
+import androidx.fragment.app.commit
+import com.wahyu.testqiscus.R
+import com.wahyu.testqiscus.ui.fragment.ChatListFragment
+import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        println("checkkkkk 1 : "+QiscusCore.hasSetupUser())
+
+        if (fragment_container != null) {
+            if (savedInstanceState != null) {
+                return
+            }
+
+            supportFragmentManager.commit {
+                add<ChatListFragment>(R.id.fragment_container, "", intent.extras)
+            }
+        }
+
+        /*println("checkkkkk 1 : "+QiscusCore.hasSetupUser())
 //        initQiscus()
         QiscusCore.clearUser();
-        println("checkkkkk 2 : "+QiscusCore.hasSetupUser())
+        println("checkkkkk 2 : "+QiscusCore.hasSetupUser())*/
 
     }
 
-    private fun initQiscus() {
+    /*private fun initQiscus() {
         QiscusCore.setUser("triwahyuprasetyo@gmail.com", "qiscuschat101")
                 .withUsername("triwahyuprasetyo")
                 .withAvatarUrl("")
@@ -31,6 +45,6 @@ class MainActivity : AppCompatActivity() {
                         println("okayyy nooooooo")
                     }
                 })
-    }
+    }*/
 }
 
