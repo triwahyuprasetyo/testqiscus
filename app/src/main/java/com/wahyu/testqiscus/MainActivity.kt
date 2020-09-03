@@ -10,7 +10,11 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        initQiscus()
+        println("checkkkkk 1 : "+QiscusCore.hasSetupUser())
+//        initQiscus()
+        QiscusCore.clearUser();
+        println("checkkkkk 2 : "+QiscusCore.hasSetupUser())
+
     }
 
     private fun initQiscus() {

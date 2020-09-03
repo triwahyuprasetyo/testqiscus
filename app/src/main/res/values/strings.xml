@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">testqiscus</string>
+    <string name="login_des">Login to\nmake chat 1 on 1 on Qiscus</string>
+    <string name="email">Email</string>
+    <string name="display_name">Display Name</string>
+    <string name="login">Login</string>
 </resources>
