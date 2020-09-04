@@ -1,11 +1,13 @@
 package com.wahyu.testqiscus
 
 import android.app.Activity
+import android.content.Context
 import android.graphics.Color
 import android.os.Build
 import android.view.View
 import android.view.Window
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 
 object Utils {
@@ -38,4 +40,8 @@ object Utils {
         }
     }
 
+    fun showToast(context: Context, message: String) {
+        Toast.makeText(context, message, Toast.LENGTH_SHORT)
+            .show()
+    }
 }

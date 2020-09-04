@@ -6,4 +6,6 @@
     <string name="login">Login</string>
     <string name="login_alert">please fill with more than 3 character</string>
     <string name="logout">Logout</string>
+    <string name="message">Message</string>
+    <string name="username_not_found">Username not found</string>
 </resources>

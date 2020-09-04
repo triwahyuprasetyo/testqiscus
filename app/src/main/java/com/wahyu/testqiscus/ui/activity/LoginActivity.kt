@@ -2,13 +2,13 @@ package com.wahyu.testqiscus.ui.activity
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import com.wahyu.testqiscus.ConstantVariable.MINIMUM_CHAR
 import com.wahyu.testqiscus.ConstantVariable.SUCCESS
 import com.wahyu.testqiscus.R
+import com.wahyu.testqiscus.Utils
 import com.wahyu.testqiscus.viewmodel.LoginViewModel
 import kotlinx.android.synthetic.main.activity_login.*
 
@@ -22,7 +22,7 @@ class LoginActivity : AppCompatActivity() {
             if (it.equals(SUCCESS)) {
                 gotoMain()
             } else {
-                showToast(it)
+                Utils.showToast(this, it)
             }
         })
 
@@ -33,14 +33,9 @@ class LoginActivity : AppCompatActivity() {
             if (email.length > MINIMUM_CHAR && displayName.length > MINIMUM_CHAR) {
                 model.login(email, displayName)
             } else {
-                showToast(getString(R.string.login_alert))
+                Utils.showToast(this, getString(R.string.login_alert))
             }
         }
-    }
-
-    fun showToast(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT)
-            .show()
     }
 
     fun gotoMain() {
