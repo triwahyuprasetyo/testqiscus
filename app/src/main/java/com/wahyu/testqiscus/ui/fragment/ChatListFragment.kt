@@ -1,7 +1,6 @@
 package com.wahyu.testqiscus.ui.fragment
 
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.view.*
 import androidx.appcompat.app.AlertDialog
@@ -11,8 +10,6 @@ import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.material.snackbar.Snackbar
-import com.google.gson.Gson
 import com.qiscus.sdk.chat.core.QiscusCore
 import com.qiscus.sdk.chat.core.data.model.QiscusComment
 import com.qiscus.sdk.chat.core.data.remote.QiscusApi
@@ -26,7 +23,6 @@ import com.wahyu.testqiscus.model.ContactData
 import com.wahyu.testqiscus.ui.adapter.ContactAdapter
 import com.wahyu.testqiscus.viewmodel.ChatListViewModel
 import kotlinx.android.synthetic.main.dialog_new_contact.view.*
-import kotlinx.android.synthetic.main.fragment_chat_list.*
 import kotlinx.android.synthetic.main.fragment_chat_list.view.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -111,20 +107,13 @@ class ChatListFragment : Fragment() {
             }
         })
 
-
-        val callback = object : OnItemClickListener {
-            override fun onSelectCandidate(id: Int) {
-
-            }
-        }
-
         linearLayoutManager = LinearLayoutManager(context)
         view.recyclerView.layoutManager = linearLayoutManager
         contactList = mutableListOf()
-        contactList.add(ContactData(1,"aaaaaa","","eeeeeee"))
-        contactList.add(ContactData(2,"bbbbbb","","fffffff"))
-        contactList.add(ContactData(3,"cccccc","","ggggggg"))
-        contactList.add(ContactData(4,"dddddd","","hhhhhhh"))
+        contactList.add(ContactData(1, "aaaaaa", "", "eeeeeee"))
+        contactList.add(ContactData(2, "bbbbbb", "", "fffffff"))
+        contactList.add(ContactData(3, "cccccc", "", "ggggggg"))
+        contactList.add(ContactData(4, "dddddd", "", "hhhhhhh"))
         adapterRecyclerView =
             ContactAdapter(
                 listData = contactList,
@@ -141,6 +130,12 @@ class ChatListFragment : Fragment() {
     private lateinit var adapterRecyclerView: ContactAdapter
     private lateinit var contactList: MutableList<ContactData>
     private var roomId: Long? = null
+
+    private val callback = object : OnItemClickListener {
+        override fun onSelectCandidate(id: Int) {
+            println("click :: " + id)
+        }
+    }
 
     fun sendMessage(message: String, roomId: Long) {
         val qiscusMessage: QiscusComment = QiscusComment.generateMessage(roomId, message)
