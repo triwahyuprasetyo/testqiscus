@@ -9,20 +9,16 @@ import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.qiscus.sdk.chat.core.data.model.QiscusChatRoom
 import com.wahyu.testqiscus.R
-import com.wahyu.testqiscus.model.ContactData
 import com.wahyu.testqiscus.ui.fragment.ChatListFragment
 import kotlinx.android.synthetic.main.contact_item_layout.view.*
 
 class ContactAdapter(
-    private var listData: List<ContactData>,
+    private var listQiscusChatRoom: List<QiscusChatRoom>,
     private val callback: ChatListFragment.OnItemClickListener,
     private val context: Context
 ) : RecyclerView.Adapter<ContactAdapter.ViewHolder>() {
-
-    fun replaceData(list: List<ContactData>) {
-        listData = list
-    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolderItemContact(
@@ -31,22 +27,22 @@ class ContactAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val contactData: ContactData = listData[position]
+        val qiscusChatRoom: QiscusChatRoom = listQiscusChatRoom[position]
         val view = holder as ViewHolderItemContact
-        view.contactName.text = contactData.name
-        view.contactMessage.text = contactData.message
+        view.contactName.text = qiscusChatRoom.name
+        view.contactMessage.text = qiscusChatRoom.lastComment?.message
         view.container.setOnClickListener {
             callback.onSelectCandidate(position)
         }
 
-        Glide.with(context).load(contactData.avatar)
+        Glide.with(context).load(qiscusChatRoom.avatarUrl)
             .circleCrop()
             .placeholder(R.drawable.ic_image)
             .error(R.drawable.ic_broken_image)
             .into(view.imageAvatar)
     }
 
-    override fun getItemCount(): Int = listData.size
+    override fun getItemCount(): Int = listQiscusChatRoom.size
 
     open inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 

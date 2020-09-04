@@ -7,13 +7,15 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import com.google.gson.Gson
+import com.qiscus.sdk.chat.core.data.model.QiscusChatRoom
 import com.qiscus.sdk.chat.core.data.model.QiscusComment
 import com.qiscus.sdk.chat.core.data.remote.QiscusApi
+import com.qiscus.sdk.chat.core.event.QiscusCommentReceivedEvent
 import com.wahyu.testqiscus.ConstantVariable
 import com.wahyu.testqiscus.R
-import com.wahyu.testqiscus.model.ContactData
 import kotlinx.android.synthetic.main.fragment_chat_detail.view.*
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
 import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
 
@@ -24,6 +26,21 @@ class ChatDetailFragment : Fragment() {
     override fun onAttach(context: Context) {
         super.onAttach(context)
         fragmentActivity = context as FragmentActivity
+    }
+
+    override fun onResume() {
+        super.onResume()
+        EventBus.getDefault().register(this)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        EventBus.getDefault().unregister(this)
+    }
+
+    @Subscribe
+    fun onMessageReceived(event: QiscusCommentReceivedEvent) {
+        println("message : " + event.qiscusComment.message) // to get the comment
     }
 
     override fun onCreateView(
@@ -39,12 +56,10 @@ class ChatDetailFragment : Fragment() {
             }
         })
 
-        var contactData: ContactData? = null
-        val data: String? = arguments?.getString("data", "")
-        data?.let {
-            contactData = Gson().fromJson(it, ContactData::class.java)
+        var qiscusChatRoom: QiscusChatRoom? = arguments?.get("qiscusChatRoom") as QiscusChatRoom?
+        qiscusChatRoom?.let {
+            view.toolbar.title = it.name
         }
-        view.toolbar.title = contactData?.name
 
         return view
     }

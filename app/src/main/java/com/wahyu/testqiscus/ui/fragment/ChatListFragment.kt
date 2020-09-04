@@ -9,7 +9,6 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.*
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.gson.Gson
 import com.qiscus.sdk.chat.core.QiscusCore
 import com.qiscus.sdk.chat.core.data.model.QiscusChatRoom
 import com.qiscus.sdk.chat.core.data.remote.QiscusPusherApi
@@ -18,7 +17,6 @@ import com.wahyu.testqiscus.ConstantVariable
 import com.wahyu.testqiscus.R
 import com.wahyu.testqiscus.Utils
 import com.wahyu.testqiscus.model.ChatRoomResult
-import com.wahyu.testqiscus.model.ContactData
 import com.wahyu.testqiscus.ui.adapter.ContactAdapter
 import com.wahyu.testqiscus.viewmodel.ChatListViewModel
 import kotlinx.android.synthetic.main.dialog_new_contact.view.*
@@ -33,11 +31,10 @@ class ChatListFragment : Fragment() {
     private val model: ChatListViewModel by viewModels()
     private lateinit var linearLayoutManager: LinearLayoutManager
     private lateinit var adapterRecyclerView: ContactAdapter
-    private lateinit var contactList: MutableList<ContactData>
-    private var roomId: Long? = null
+    private lateinit var qiscusChatRoomList: MutableList<QiscusChatRoom>
     private val callback = object : OnItemClickListener {
         override fun onSelectCandidate(idx: Int) {
-            goToDetail(contactList.get(idx))
+            goToDetail(qiscusChatRoomList.get(idx))
         }
     }
 
@@ -87,18 +84,13 @@ class ChatListFragment : Fragment() {
             true
         }
 
-        var listChatRom: List<QiscusChatRoom?> = QiscusCore.getDataStore().getChatRooms(10)
-        contactList = mutableListOf()
-        for (i in 0 until listChatRom.size) {
-            val qiscusChatRoom: QiscusChatRoom? = listChatRom.get(i)
-            contactList.add(
-                ContactData(
-                    qiscusChatRoom?.id,
-                    qiscusChatRoom?.name,
-                    qiscusChatRoom?.avatarUrl,
-                    qiscusChatRoom?.lastComment?.message
-                )
-            )
+        qiscusChatRoomList=mutableListOf<QiscusChatRoom>()
+
+        var tempChatRoomList: List<QiscusChatRoom?> = QiscusCore.getDataStore().getChatRooms(10)
+        for (i in 0 until tempChatRoomList.size) {
+            val qiscusChatRoom: QiscusChatRoom? = tempChatRoomList.get(i)
+            qiscusChatRoom?.let { qiscusChatRoomList.add(it) }
+            QiscusPusherApi.getInstance().subscribeChatRoom(qiscusChatRoom)
         }
 
         val context = activity as Context
@@ -106,19 +98,12 @@ class ChatListFragment : Fragment() {
             if (it.status.equals(ConstantVariable.ERROR)) {
                 Utils.showToast(context, context.getString(R.string.username_not_found))
             } else {
-                roomId = it.chatRoom?.id
-                QiscusCore.getDataStore().addOrUpdate(it.chatRoom)
-                QiscusPusherApi.getInstance().subscribeChatRoom(it.chatRoom)
-
-                val contactData: ContactData = ContactData(
-                    it.chatRoom?.id,
-                    it.chatRoom?.name,
-                    it.chatRoom?.avatarUrl,
-                    it.chatRoom?.lastComment?.message
-                )
-                contactList.add(contactData)
-                adapterRecyclerView.notifyDataSetChanged()
-                goToDetail(contactData)
+                it.chatRoom?.let {
+                    QiscusCore.getDataStore().addOrUpdate(it)
+                    QiscusPusherApi.getInstance().subscribeChatRoom(it)
+                    qiscusChatRoomList.add(it)
+                    goToDetail(it)
+                }
             }
         })
 
@@ -126,7 +111,7 @@ class ChatListFragment : Fragment() {
         view.recyclerView.layoutManager = linearLayoutManager
         adapterRecyclerView =
             ContactAdapter(
-                listData = contactList,
+                listQiscusChatRoom = qiscusChatRoomList,
                 callback = callback,
                 context = context
             )
@@ -135,10 +120,13 @@ class ChatListFragment : Fragment() {
         return view
     }
 
-    fun goToDetail(contactData: ContactData) {
-        val dataString: String = Gson().toJson(contactData)
+    fun goToDetail(qiscusChatRoom: QiscusChatRoom) {
         fragmentActivity.supportFragmentManager.commit {
-            add<ChatDetailFragment>(R.id.fragment_container, "", bundleOf("data" to dataString))
+            add<ChatDetailFragment>(
+                R.id.fragment_container,
+                "",
+                bundleOf("qiscusChatRoom" to qiscusChatRoom)
+            )
             addToBackStack(null)
         }
     }
