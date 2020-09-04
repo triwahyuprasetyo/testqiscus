@@ -1,6 +1,7 @@
 package com.wahyu.testqiscus.ui.fragment
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.*
 import androidx.appcompat.app.AlertDialog
@@ -9,6 +10,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.snackbar.Snackbar
+import com.google.gson.Gson
 import com.qiscus.sdk.chat.core.QiscusCore
 import com.qiscus.sdk.chat.core.data.model.QiscusComment
 import com.qiscus.sdk.chat.core.data.remote.QiscusApi
@@ -18,6 +22,8 @@ import com.wahyu.testqiscus.ConstantVariable
 import com.wahyu.testqiscus.R
 import com.wahyu.testqiscus.Utils
 import com.wahyu.testqiscus.model.ChatRoomResult
+import com.wahyu.testqiscus.model.ContactData
+import com.wahyu.testqiscus.ui.adapter.ContactAdapter
 import com.wahyu.testqiscus.viewmodel.ChatListViewModel
 import kotlinx.android.synthetic.main.dialog_new_contact.view.*
 import kotlinx.android.synthetic.main.fragment_chat_list.*
@@ -53,22 +59,26 @@ class ChatListFragment : Fragment() {
         println("message : " + event.qiscusComment.message) // to get the comment
     }
 
+    interface OnItemClickListener {
+        fun onSelectCandidate(id: Int)
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val view: View = inflater.inflate(R.layout.fragment_chat_list, container, false)
-        view.button.setOnClickListener {
-            /*fragmentActivity.supportFragmentManager.commit {
+        /*view.button.setOnClickListener {
+            *//*fragmentActivity.supportFragmentManager.commit {
                 add<ChatDetailFragment>(R.id.fragment_container, "", null)
                 // add the transaction to the back stack so the user can navigate back
                 addToBackStack(null)
-            }*/
+            }*//*
 
             val st: String = editTextTextInput.text.toString()
             roomId?.let { it1 -> sendMessage(st, it1) }
-        }
+        }*/
 
         view.fab.setOnClickListener { view ->
             showCreateCategoryDialog()
@@ -101,9 +111,35 @@ class ChatListFragment : Fragment() {
             }
         })
 
+
+        val callback = object : OnItemClickListener {
+            override fun onSelectCandidate(id: Int) {
+
+            }
+        }
+
+        linearLayoutManager = LinearLayoutManager(context)
+        view.recyclerView.layoutManager = linearLayoutManager
+        contactList = mutableListOf()
+        contactList.add(ContactData(1,"aaaaaa","","eeeeeee"))
+        contactList.add(ContactData(2,"bbbbbb","","fffffff"))
+        contactList.add(ContactData(3,"cccccc","","ggggggg"))
+        contactList.add(ContactData(4,"dddddd","","hhhhhhh"))
+        adapterRecyclerView =
+            ContactAdapter(
+                listData = contactList,
+                callback = callback,
+                context = context
+            )
+
+        view.recyclerView.adapter = adapterRecyclerView
+
         return view
     }
 
+    private lateinit var linearLayoutManager: LinearLayoutManager
+    private lateinit var adapterRecyclerView: ContactAdapter
+    private lateinit var contactList: MutableList<ContactData>
     private var roomId: Long? = null
 
     fun sendMessage(message: String, roomId: Long) {
