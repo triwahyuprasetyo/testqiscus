@@ -56,17 +56,25 @@ class ChatListFragment : Fragment() {
 
     @Subscribe
     fun onMessageReceived(event: QiscusCommentReceivedEvent) {
-        updateLastComment(event.qiscusComment)
+        if (isChatRoomExistAndUpdateLastComment(event.qiscusComment)) {
+            adapterRecyclerView.notifyDataSetChanged()
+        } else {
+            if (!event.qiscusComment.senderEmail.equals(QiscusCore.getQiscusAccount().email)) {
+                model.createNewChatRoom(event.qiscusComment.senderEmail)
+            }
+        }
     }
 
-    fun updateLastComment(qiscusComment: QiscusComment){
-        for (i in 0 until qiscusChatRoomList.size){
-            if(qiscusChatRoomList.get(i).id==qiscusComment.roomId){
-                qiscusChatRoomList.get(i).lastComment=qiscusComment
+    fun isChatRoomExistAndUpdateLastComment(qiscusComment: QiscusComment): Boolean {
+        var exist: Boolean = false
+        for (i in 0 until qiscusChatRoomList.size) {
+            if (qiscusChatRoomList.get(i).id == qiscusComment.roomId) {
+                exist = true
+                qiscusChatRoomList.get(i).lastComment = qiscusComment
                 break
             }
         }
-        adapterRecyclerView.notifyDataSetChanged()
+        return exist
     }
 
     interface OnItemClickListener {
@@ -94,6 +102,7 @@ class ChatListFragment : Fragment() {
             }
             true
         }
+        view.toolbar.title = "Hi " + QiscusCore.getQiscusAccount().username
 
         qiscusChatRoomList = mutableListOf<QiscusChatRoom>()
 
@@ -118,6 +127,16 @@ class ChatListFragment : Fragment() {
                 }
             }
         })
+        model.getNewChatRoom().observe(viewLifecycleOwner, Observer<ChatRoomResult> {
+            if (!it.status.equals(ConstantVariable.ERROR)) {
+                it.chatRoom?.let {
+                    QiscusCore.getDataStore().addOrUpdate(it)
+                    QiscusPusherApi.getInstance().subscribeChatRoom(it)
+                    qiscusChatRoomList.add(it)
+                    adapterRecyclerView.notifyDataSetChanged()
+                }
+            }
+        })
 
         linearLayoutManager = LinearLayoutManager(context)
         view.recyclerView.layoutManager = linearLayoutManager
@@ -131,7 +150,6 @@ class ChatListFragment : Fragment() {
 
         return view
     }
-
 
 
     fun goToDetail(qiscusChatRoom: QiscusChatRoom) {

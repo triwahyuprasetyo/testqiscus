@@ -15,7 +15,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        Utils.updateStatusBar(window,this,R.color.colorStatusBar)
+        Utils.updateStatusBar(window, this, R.color.colorStatusBar)
         if (fragment_container != null) {
             if (savedInstanceState != null) {
                 return

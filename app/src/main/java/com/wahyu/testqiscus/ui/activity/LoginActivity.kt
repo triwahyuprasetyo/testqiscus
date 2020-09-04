@@ -26,7 +26,6 @@ class LoginActivity : AppCompatActivity() {
             }
         })
 
-
         buttonLogin.setOnClickListener {
             val email: String = textInputEditTextEmail.text.toString().trim()
             val displayName: String = textInputEditTextDisplayName.text.toString().trim()
