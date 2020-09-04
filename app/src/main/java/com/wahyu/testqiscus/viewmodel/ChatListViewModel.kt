@@ -4,24 +4,25 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.wahyu.testqiscus.TestQiscusRepository
+import com.wahyu.testqiscus.model.ChatRoomResult
 
-class ChatListViewModel:ViewModel() {
-    private var status = MutableLiveData<String>()
+class ChatListViewModel : ViewModel() {
+    private var chatRoomResult = MutableLiveData<ChatRoomResult>()
     private var repository: TestQiscusRepository = TestQiscusRepository()
 
-    fun getStatus(): LiveData<String> {
-        return status
+    fun getChatRoom(): LiveData<ChatRoomResult> {
+        return chatRoomResult
     }
 
     fun createChatRoom(email: String) {
-        repository.getChatRoom(email,  object : OnStatusReady {
-            override fun OnStatus(st: String) {
-                status.postValue(st)
+        repository.getChatRoom(email, object : OnChatRoomListener {
+            override fun OnChatRoomReady(chatRoom: ChatRoomResult) {
+                chatRoomResult.value = chatRoom
             }
         })
     }
 
-    interface OnStatusReady {
-        fun OnStatus(status: String)
+    interface OnChatRoomListener {
+        fun OnChatRoomReady(chatRoomResult: ChatRoomResult)
     }
 }

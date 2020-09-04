@@ -13,9 +13,9 @@ import com.qiscus.sdk.chat.core.QiscusCore
 import com.wahyu.testqiscus.ConstantVariable
 import com.wahyu.testqiscus.R
 import com.wahyu.testqiscus.Utils
+import com.wahyu.testqiscus.model.ChatRoomResult
 import com.wahyu.testqiscus.viewmodel.ChatListViewModel
 import kotlinx.android.synthetic.main.dialog_new_contact.view.*
-import kotlinx.android.synthetic.main.fragment_chat_list.*
 import kotlinx.android.synthetic.main.fragment_chat_list.view.*
 
 
@@ -60,11 +60,11 @@ class ChatListFragment : Fragment() {
         }
 
         val context = activity as Context
-        model.getStatus().observe(viewLifecycleOwner, Observer<String> {
-            if (it.equals(ConstantVariable.ERROR)) {
+        model.getChatRoom().observe(viewLifecycleOwner, Observer<ChatRoomResult> {
+            if (it.status.equals(ConstantVariable.ERROR)) {
                 Utils.showToast(context, context.getString(R.string.username_not_found))
             } else {
-                Utils.showToast(context, "chatroom : " + it)
+                Utils.showToast(context, "chatroom : " + it.chatRoom?.id)
             }
         })
 

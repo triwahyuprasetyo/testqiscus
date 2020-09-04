@@ -4,6 +4,7 @@ import com.qiscus.sdk.chat.core.QiscusCore
 import com.qiscus.sdk.chat.core.data.model.QiscusAccount
 import com.qiscus.sdk.chat.core.data.model.QiscusChatRoom
 import com.qiscus.sdk.chat.core.data.remote.QiscusApi
+import com.wahyu.testqiscus.model.ChatRoomResult
 import com.wahyu.testqiscus.viewmodel.ChatListViewModel
 import com.wahyu.testqiscus.viewmodel.LoginViewModel
 import rx.android.schedulers.AndroidSchedulers
@@ -34,20 +35,29 @@ class TestQiscusRepository {
 
     fun getChatRoom(
         email: String,
-        onStatusReady: ChatListViewModel.OnStatusReady
+        onStatusReady: ChatListViewModel.OnChatRoomListener
     ) {
+        var chatRoomResult = ChatRoomResult(null, null)
         QiscusApi.getInstance().chatUser(email, null)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 { chatRoom: QiscusChatRoom? ->
-                    onStatusReady.OnStatus(chatRoom?.id.toString())
+                    if (chatRoom != null) {
+                        chatRoomResult.chatRoom = chatRoom
+                        chatRoomResult.status = ConstantVariable.SUCCESS
+                        onStatusReady.OnChatRoomReady(chatRoomResult)
+                    }
+
                 }
             ) { throwable: Throwable? ->
-                onStatusReady.OnStatus(ConstantVariable.ERROR)
+                chatRoomResult.status = ConstantVariable.ERROR
+                onStatusReady.OnChatRoomReady(chatRoomResult)
             }
-
     }
 
+    fun saveChatRoom(chatRoom: QiscusChatRoom) {
+        QiscusCore.getDataStore().addOrUpdate(chatRoom)
+    }
 
 }
