@@ -11,6 +11,7 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.qiscus.sdk.chat.core.QiscusCore
 import com.qiscus.sdk.chat.core.data.model.QiscusChatRoom
+import com.qiscus.sdk.chat.core.data.model.QiscusComment
 import com.qiscus.sdk.chat.core.data.remote.QiscusPusherApi
 import com.qiscus.sdk.chat.core.event.QiscusCommentReceivedEvent
 import com.wahyu.testqiscus.ConstantVariable
@@ -55,7 +56,17 @@ class ChatListFragment : Fragment() {
 
     @Subscribe
     fun onMessageReceived(event: QiscusCommentReceivedEvent) {
-        println("message : " + event.qiscusComment.message) // to get the comment
+        updateLastComment(event.qiscusComment)
+    }
+
+    fun updateLastComment(qiscusComment: QiscusComment){
+        for (i in 0 until qiscusChatRoomList.size){
+            if(qiscusChatRoomList.get(i).id==qiscusComment.roomId){
+                qiscusChatRoomList.get(i).lastComment=qiscusComment
+                break
+            }
+        }
+        adapterRecyclerView.notifyDataSetChanged()
     }
 
     interface OnItemClickListener {
@@ -120,6 +131,8 @@ class ChatListFragment : Fragment() {
 
         return view
     }
+
+
 
     fun goToDetail(qiscusChatRoom: QiscusChatRoom) {
         fragmentActivity.supportFragmentManager.commit {

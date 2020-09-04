@@ -61,6 +61,7 @@ class ChatDetailFragment : Fragment() {
             }
         }.start()
 
+        qiscusChatRoom?.lastComment=event.qiscusComment
         QiscusCore.getDataStore().addOrUpdate(qiscusChatRoom)
     }
 
