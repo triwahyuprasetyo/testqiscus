@@ -7,4 +7,5 @@
     <color name="colorWhite">#FFFFFF</color>
     <color name="colorMain">#1ACAE1</color>
     <color name="colorStatusBar">#1AB7CC</color>
+    <color name="colorSecond">#2196F3</color>
 </resources>
