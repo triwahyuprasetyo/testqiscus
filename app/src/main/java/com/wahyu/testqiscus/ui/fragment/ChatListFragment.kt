@@ -10,13 +10,22 @@ import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import com.qiscus.sdk.chat.core.QiscusCore
+import com.qiscus.sdk.chat.core.data.model.QiscusComment
+import com.qiscus.sdk.chat.core.data.remote.QiscusApi
+import com.qiscus.sdk.chat.core.data.remote.QiscusPusherApi
+import com.qiscus.sdk.chat.core.event.QiscusCommentReceivedEvent
 import com.wahyu.testqiscus.ConstantVariable
 import com.wahyu.testqiscus.R
 import com.wahyu.testqiscus.Utils
 import com.wahyu.testqiscus.model.ChatRoomResult
 import com.wahyu.testqiscus.viewmodel.ChatListViewModel
 import kotlinx.android.synthetic.main.dialog_new_contact.view.*
+import kotlinx.android.synthetic.main.fragment_chat_list.*
 import kotlinx.android.synthetic.main.fragment_chat_list.view.*
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import rx.android.schedulers.AndroidSchedulers
+import rx.schedulers.Schedulers
 
 
 class ChatListFragment : Fragment() {
@@ -27,6 +36,21 @@ class ChatListFragment : Fragment() {
     override fun onAttach(context: Context) {
         super.onAttach(context)
         fragmentActivity = context as FragmentActivity
+    }
+
+    override fun onResume() {
+        super.onResume()
+        EventBus.getDefault().register(this)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        EventBus.getDefault().unregister(this)
+    }
+
+    @Subscribe
+    fun onMessageReceived(event: QiscusCommentReceivedEvent) {
+        println("message : " + event.qiscusComment.message) // to get the comment
     }
 
     override fun onCreateView(
@@ -42,6 +66,8 @@ class ChatListFragment : Fragment() {
                 addToBackStack(null)
             }*/
 
+            val st: String = editTextTextInput.text.toString()
+            roomId?.let { it1 -> sendMessage(st, it1) }
         }
 
         view.fab.setOnClickListener { view ->
@@ -65,10 +91,32 @@ class ChatListFragment : Fragment() {
                 Utils.showToast(context, context.getString(R.string.username_not_found))
             } else {
                 Utils.showToast(context, "chatroom : " + it.chatRoom?.id)
+                println("email : " + it.chatRoom?.name)
+                println("avatar : " + it.chatRoom?.avatarUrl)
+                println("id 1 : " + it.chatRoom?.id)
+                println("id 2 : " + it.chatRoom?.distinctId)
+                println("id 3 : " + it.chatRoom?.uniqueId)
+                roomId = it.chatRoom?.id
+                QiscusPusherApi.getInstance().subscribeChatRoom(it.chatRoom)
             }
         })
 
         return view
+    }
+
+    private var roomId: Long? = null
+
+    fun sendMessage(message: String, roomId: Long) {
+        val qiscusMessage: QiscusComment = QiscusComment.generateMessage(roomId, message)
+        QiscusApi.getInstance().sendMessage(qiscusMessage)
+            .subscribeOn(Schedulers.io()) // need to run this task on IO thread
+            .observeOn(AndroidSchedulers.mainThread()) // deliver result on main thread or UI thread
+            .subscribe({ chatRoom: QiscusComment? ->
+                println(ConstantVariable.SUCCESS)
+            }
+            ) { throwable: Throwable? ->
+                println(ConstantVariable.ERROR)
+            }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
