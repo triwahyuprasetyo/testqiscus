@@ -11,6 +11,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.qiscus.sdk.chat.core.QiscusCore
+import com.qiscus.sdk.chat.core.data.model.QiscusChatRoom
 import com.qiscus.sdk.chat.core.data.model.QiscusComment
 import com.qiscus.sdk.chat.core.data.remote.QiscusApi
 import com.qiscus.sdk.chat.core.data.remote.QiscusPusherApi
@@ -91,6 +92,20 @@ class ChatListFragment : Fragment() {
             true
         }
 
+        var listChatRom: List<QiscusChatRoom?> = QiscusCore.getDataStore().getChatRooms(10)
+        contactList = mutableListOf()
+        for (i in 0 until listChatRom.size) {
+            val qiscusChatRoom: QiscusChatRoom? = listChatRom.get(i)
+            contactList.add(
+                ContactData(
+                    qiscusChatRoom?.id,
+                    qiscusChatRoom?.name,
+                    qiscusChatRoom?.avatarUrl,
+                    qiscusChatRoom?.lastComment?.message
+                )
+            )
+        }
+
         val context = activity as Context
         model.getChatRoom().observe(viewLifecycleOwner, Observer<ChatRoomResult> {
             if (it.status.equals(ConstantVariable.ERROR)) {
@@ -103,17 +118,26 @@ class ChatListFragment : Fragment() {
                 println("id 2 : " + it.chatRoom?.distinctId)
                 println("id 3 : " + it.chatRoom?.uniqueId)
                 roomId = it.chatRoom?.id
+                QiscusCore.getDataStore().addOrUpdate(it.chatRoom)
                 QiscusPusherApi.getInstance().subscribeChatRoom(it.chatRoom)
+
+                contactList.add(
+                    ContactData(
+                        it.chatRoom?.id,
+                        it.chatRoom?.name,
+                        it.chatRoom?.avatarUrl,
+                        it.chatRoom?.lastComment?.message
+                    )
+                )
+                adapterRecyclerView.notifyDataSetChanged()
             }
         })
 
+
+
         linearLayoutManager = LinearLayoutManager(context)
         view.recyclerView.layoutManager = linearLayoutManager
-        contactList = mutableListOf()
-        contactList.add(ContactData(1, "aaaaaa", "", "eeeeeee"))
-        contactList.add(ContactData(2, "bbbbbb", "", "fffffff"))
-        contactList.add(ContactData(3, "cccccc", "", "ggggggg"))
-        contactList.add(ContactData(4, "dddddd", "", "hhhhhhh"))
+
         adapterRecyclerView =
             ContactAdapter(
                 listData = contactList,

@@ -8,6 +8,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.wahyu.testqiscus.R
 import com.wahyu.testqiscus.model.ContactData
 import com.wahyu.testqiscus.ui.fragment.ChatListFragment
@@ -38,12 +39,11 @@ class ContactAdapter(
             callback.onSelectCandidate(position)
         }
 
-        /*
-        Glide.with(context).load(profileAndJob.profileCandidate.photo)
+        Glide.with(context).load(contactData.avatar)
             .circleCrop()
-            .placeholder(R.drawable.ic_baseline_account_circle_24)
-            .error(R.drawable.ic_baseline_account_circle_24)
-            .into(viewHolderCandidate.imageAvatar)*/
+            .placeholder(R.drawable.ic_image)
+            .error(R.drawable.ic_broken_image)
+            .into(view.imageAvatar)
     }
 
     override fun getItemCount(): Int = listData.size
