@@ -84,7 +84,7 @@ class ChatListFragment : Fragment() {
             true
         }
 
-        qiscusChatRoomList=mutableListOf<QiscusChatRoom>()
+        qiscusChatRoomList = mutableListOf<QiscusChatRoom>()
 
         var tempChatRoomList: List<QiscusChatRoom?> = QiscusCore.getDataStore().getChatRooms(10)
         for (i in 0 until tempChatRoomList.size) {
@@ -101,8 +101,9 @@ class ChatListFragment : Fragment() {
                 it.chatRoom?.let {
                     QiscusCore.getDataStore().addOrUpdate(it)
                     QiscusPusherApi.getInstance().subscribeChatRoom(it)
-                    qiscusChatRoomList.add(it)
                     goToDetail(it)
+                    qiscusChatRoomList.add(it)
+                    adapterRecyclerView.notifyDataSetChanged()
                 }
             }
         })
