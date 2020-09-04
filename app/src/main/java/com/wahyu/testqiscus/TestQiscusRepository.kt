@@ -48,7 +48,6 @@ class TestQiscusRepository {
                         chatRoomResult.status = ConstantVariable.SUCCESS
                         onStatusReady.OnChatRoomReady(chatRoomResult)
                     }
-
                 }
             ) { throwable: Throwable? ->
                 chatRoomResult.status = ConstantVariable.ERROR

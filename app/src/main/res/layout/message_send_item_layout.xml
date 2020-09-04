@@ -13,7 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/colorMain"
-        android:orientation="horizontal">
+        android:orientation="vertical">
 
         <TextView
             android:id="@+id/textMessageSend"
@@ -22,7 +22,20 @@
             android:layout_margin="16dp"
             android:text=""
             android:textAlignment="textEnd"
+            android:textSize="16dp"
             android:textColor="@color/colorWhite" />
+
+        <TextView
+            android:id="@+id/textStatusSend"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginBottom="16dp"
+            android:text="waiting"
+            android:textAlignment="textEnd"
+            android:textSize="12dp"
+            android:textColor="@color/colorBlack" />
     </LinearLayout>
 
 </androidx.cardview.widget.CardView>

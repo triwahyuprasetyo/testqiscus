@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.qiscus.sdk.chat.core.QiscusCore
 import com.qiscus.sdk.chat.core.data.model.QiscusComment
 import com.wahyu.testqiscus.R
 import kotlinx.android.synthetic.main.message_receive_item_layout.view.*
@@ -14,8 +15,7 @@ import kotlinx.android.synthetic.main.message_send_item_layout.view.*
 
 class MessageAdapter(
     private var listData: List<QiscusComment>,
-    private val context: Context,
-    private val receiverEmail: String
+    private val context: Context
 ) : RecyclerView.Adapter<MessageAdapter.ViewHolder>() {
 
     companion object {
@@ -43,6 +43,11 @@ class MessageAdapter(
             SEND -> {
                 val view = holder as ViewHolderItemSend
                 view.textMessageSend.text = qiscusComment.message
+                if (qiscusComment.state == 3) {
+                    view.textStatusSend.text = "delivered"
+                } else if (qiscusComment.state == 4) {
+                    view.textStatusSend.text = "read"
+                }
             }
             else -> {
                 val view = holder as ViewHolderItemReceive
@@ -55,10 +60,10 @@ class MessageAdapter(
 
     override fun getItemViewType(position: Int): Int {
         val viewType: QiscusComment = listData[position]
-        if (viewType.senderEmail.equals(receiverEmail)) {
-            return RECEIVE
-        } else {
+        if (viewType.senderEmail.equals(QiscusCore.getQiscusAccount().email)) {
             return SEND
+        } else {
+            return RECEIVE
         }
     }
 
@@ -70,6 +75,7 @@ class MessageAdapter(
 
     inner class ViewHolderItemSend(itemView: View) : ViewHolder(itemView) {
         val textMessageSend: TextView = itemView.textMessageSend
+        val textStatusSend: TextView = itemView.textStatusSend
     }
 
 }

@@ -22,7 +22,8 @@
             android:layout_margin="16dp"
             android:text=""
             android:textAlignment="textStart"
-            android:textColor="@color/colorWhite" />
+            android:textColor="@color/colorWhite"
+            android:textSize="16dp"/>
     </LinearLayout>
 
 </androidx.cardview.widget.CardView>

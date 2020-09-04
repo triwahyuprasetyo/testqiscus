@@ -2,11 +2,14 @@ package com.wahyu.testqiscus.ui.fragment
 
 import android.content.Context
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.qiscus.sdk.chat.core.QiscusCore
 import com.qiscus.sdk.chat.core.data.model.QiscusChatRoom
 import com.qiscus.sdk.chat.core.data.model.QiscusComment
 import com.qiscus.sdk.chat.core.data.remote.QiscusApi
@@ -16,6 +19,7 @@ import com.qiscus.sdk.chat.core.event.QiscusCommentReceivedEvent
 import com.wahyu.testqiscus.ConstantVariable
 import com.wahyu.testqiscus.R
 import com.wahyu.testqiscus.Utils
+import com.wahyu.testqiscus.ui.adapter.MessageAdapter
 import kotlinx.android.synthetic.main.fragment_chat_detail.view.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -41,47 +45,61 @@ class ChatDetailFragment : Fragment() {
         EventBus.getDefault().unregister(this)
     }
 
+    private lateinit var linearLayoutManager: LinearLayoutManager
+    private lateinit var adapterRecyclerView: MessageAdapter
+    private lateinit var qiscusCommentList: MutableList<QiscusComment>
+
     @Subscribe
     fun onMessageReceived(event: QiscusCommentReceivedEvent) {
-        println("message : " + event.qiscusComment.message + " - " + event.qiscusComment.sender) // to get the comment
-        val context: Context = activity as Context
-        Utils.showToast(
-            context,
-            event.qiscusComment.message + " - " + event.qiscusComment.senderEmail + " - " + event.qiscusComment.state
-        )
-//        QiscusCore.getDataStore().addOrUpdate(qiscusChatRoom)
-        /*object : CountDownTimer(ConstantVariable.SPLASH_TIME, 1000) {
+        qiscusCommentList.add(event.qiscusComment)
+        adapterRecyclerView.notifyDataSetChanged()
+        object : CountDownTimer(ConstantVariable.SPLASH_TIME, 2000) {//delay for testing
             override fun onTick(m: Long) {}
             override fun onFinish() {
                 QiscusPusherApi.getInstance()
                     .markAsRead(event.qiscusComment.roomId, event.qiscusComment.id)
             }
-        }.start()*/
+        }.start()
 
+        QiscusCore.getDataStore().addOrUpdate(qiscusChatRoom)
     }
 
     @Subscribe
     fun onReceiveRoomEvent(roomEvent: QiscusChatRoomEvent) {
         when (roomEvent.event) {
-            QiscusChatRoomEvent.Event.TYPING -> {
-                roomEvent.roomId // this is the room id
-                roomEvent.user // this is the qiscus user id
-                roomEvent.isTyping // true if the user is typing
-
-            }
             QiscusChatRoomEvent.Event.DELIVERED -> {
                 roomEvent.roomId // this is the room id
                 roomEvent.user // this is the qiscus user id
                 roomEvent.commentId // the comment id was delivered
-                println("DELIVEREDDDDDDD " + roomEvent.user)
+                sendDelivered(roomEvent.commentId)
             }
             QiscusChatRoomEvent.Event.READ -> {
                 roomEvent.roomId // this is the room id
                 roomEvent.user // this is the qiscus user id
                 roomEvent.commentId // the comment id was read
-                println("READDDDDDDDDDDD " + roomEvent.user)
+                sendReceive(roomEvent.commentId)
             }
         }
+    }
+
+    fun sendDelivered(commentId: Long) {
+        for (i in 0 until qiscusCommentList.size) {
+            if (qiscusCommentList.get(i).id == commentId) {
+                qiscusCommentList.get(i).state = 3
+                break
+            }
+        }
+        adapterRecyclerView.notifyDataSetChanged()
+    }
+
+    fun sendReceive(commentId: Long) {
+        for (i in 0 until qiscusCommentList.size) {
+            if (qiscusCommentList.get(i).id == commentId) {
+                qiscusCommentList.get(i).state = 4
+                break
+            }
+        }
+        adapterRecyclerView.notifyDataSetChanged()
     }
 
     var qiscusChatRoom: QiscusChatRoom? = null
@@ -112,9 +130,34 @@ class ChatDetailFragment : Fragment() {
             if (text.isNotEmpty()) {
                 qiscusChatRoom?.let {
                     sendMessage(text, qiscusChatRoom!!.id)
+                    view.editTextTextInput.text.clear()
                 }
             } else {
                 Utils.showToast(context, getString(R.string.message_alert))
+            }
+        }
+
+        qiscusCommentList = mutableListOf<QiscusComment>()
+        linearLayoutManager = LinearLayoutManager(context)
+        view.recyclerviewDetail.layoutManager = linearLayoutManager
+        adapterRecyclerView =
+            MessageAdapter(
+                listData = qiscusCommentList,
+                context = context
+            )
+        view.recyclerviewDetail.adapter = adapterRecyclerView
+
+        qiscusChatRoom?.let {
+            if (it.lastComment!=null){
+                qiscusCommentList.add(it.lastComment)
+                adapterRecyclerView.notifyDataSetChanged()
+                object : CountDownTimer(ConstantVariable.SPLASH_TIME, 2000) {//delay for testing
+                override fun onTick(m: Long) {}
+                    override fun onFinish() {
+                        QiscusPusherApi.getInstance()
+                            .markAsRead(it.lastComment.roomId, it.lastComment.id)
+                    }
+                }.start()
             }
         }
 
