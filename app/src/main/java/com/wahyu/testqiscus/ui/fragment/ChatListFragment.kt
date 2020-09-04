@@ -5,15 +5,13 @@ import android.os.Bundle
 import android.view.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
-import androidx.fragment.app.viewModels
+import androidx.core.os.bundleOf
+import androidx.fragment.app.*
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.gson.Gson
 import com.qiscus.sdk.chat.core.QiscusCore
 import com.qiscus.sdk.chat.core.data.model.QiscusChatRoom
-import com.qiscus.sdk.chat.core.data.model.QiscusComment
-import com.qiscus.sdk.chat.core.data.remote.QiscusApi
 import com.qiscus.sdk.chat.core.data.remote.QiscusPusherApi
 import com.qiscus.sdk.chat.core.event.QiscusCommentReceivedEvent
 import com.wahyu.testqiscus.ConstantVariable
@@ -27,14 +25,21 @@ import kotlinx.android.synthetic.main.dialog_new_contact.view.*
 import kotlinx.android.synthetic.main.fragment_chat_list.view.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
-import rx.android.schedulers.AndroidSchedulers
-import rx.schedulers.Schedulers
 
 
 class ChatListFragment : Fragment() {
 
     private lateinit var fragmentActivity: FragmentActivity
     private val model: ChatListViewModel by viewModels()
+    private lateinit var linearLayoutManager: LinearLayoutManager
+    private lateinit var adapterRecyclerView: ContactAdapter
+    private lateinit var contactList: MutableList<ContactData>
+    private var roomId: Long? = null
+    private val callback = object : OnItemClickListener {
+        override fun onSelectCandidate(idx: Int) {
+            goToDetail(contactList.get(idx))
+        }
+    }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -66,16 +71,6 @@ class ChatListFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view: View = inflater.inflate(R.layout.fragment_chat_list, container, false)
-        /*view.button.setOnClickListener {
-            *//*fragmentActivity.supportFragmentManager.commit {
-                add<ChatDetailFragment>(R.id.fragment_container, "", null)
-                // add the transaction to the back stack so the user can navigate back
-                addToBackStack(null)
-            }*//*
-
-            val st: String = editTextTextInput.text.toString()
-            roomId?.let { it1 -> sendMessage(st, it1) }
-        }*/
 
         view.fab.setOnClickListener { view ->
             showCreateCategoryDialog()
@@ -111,73 +106,46 @@ class ChatListFragment : Fragment() {
             if (it.status.equals(ConstantVariable.ERROR)) {
                 Utils.showToast(context, context.getString(R.string.username_not_found))
             } else {
-                Utils.showToast(context, "chatroom : " + it.chatRoom?.id)
-                println("email : " + it.chatRoom?.name)
-                println("avatar : " + it.chatRoom?.avatarUrl)
-                println("id 1 : " + it.chatRoom?.id)
-                println("id 2 : " + it.chatRoom?.distinctId)
-                println("id 3 : " + it.chatRoom?.uniqueId)
                 roomId = it.chatRoom?.id
                 QiscusCore.getDataStore().addOrUpdate(it.chatRoom)
                 QiscusPusherApi.getInstance().subscribeChatRoom(it.chatRoom)
 
-                contactList.add(
-                    ContactData(
-                        it.chatRoom?.id,
-                        it.chatRoom?.name,
-                        it.chatRoom?.avatarUrl,
-                        it.chatRoom?.lastComment?.message
-                    )
+                val contactData: ContactData = ContactData(
+                    it.chatRoom?.id,
+                    it.chatRoom?.name,
+                    it.chatRoom?.avatarUrl,
+                    it.chatRoom?.lastComment?.message
                 )
+                contactList.add(contactData)
                 adapterRecyclerView.notifyDataSetChanged()
+                goToDetail(contactData)
             }
         })
 
-
-
         linearLayoutManager = LinearLayoutManager(context)
         view.recyclerView.layoutManager = linearLayoutManager
-
         adapterRecyclerView =
             ContactAdapter(
                 listData = contactList,
                 callback = callback,
                 context = context
             )
-
         view.recyclerView.adapter = adapterRecyclerView
 
         return view
     }
 
-    private lateinit var linearLayoutManager: LinearLayoutManager
-    private lateinit var adapterRecyclerView: ContactAdapter
-    private lateinit var contactList: MutableList<ContactData>
-    private var roomId: Long? = null
-
-    private val callback = object : OnItemClickListener {
-        override fun onSelectCandidate(id: Int) {
-            println("click :: " + id)
+    fun goToDetail(contactData: ContactData) {
+        val dataString: String = Gson().toJson(contactData)
+        fragmentActivity.supportFragmentManager.commit {
+            add<ChatDetailFragment>(R.id.fragment_container, "", bundleOf("data" to dataString))
+            addToBackStack(null)
         }
-    }
-
-    fun sendMessage(message: String, roomId: Long) {
-        val qiscusMessage: QiscusComment = QiscusComment.generateMessage(roomId, message)
-        QiscusApi.getInstance().sendMessage(qiscusMessage)
-            .subscribeOn(Schedulers.io()) // need to run this task on IO thread
-            .observeOn(AndroidSchedulers.mainThread()) // deliver result on main thread or UI thread
-            .subscribe({ chatRoom: QiscusComment? ->
-                println(ConstantVariable.SUCCESS)
-            }
-            ) { throwable: Throwable? ->
-                println(ConstantVariable.ERROR)
-            }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
-
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -190,10 +158,8 @@ class ChatListFragment : Fragment() {
         builder.setTitle("Enter your friend's email address")
         val view = layoutInflater.inflate(R.layout.dialog_new_contact, null)
         builder.setView(view)
-
         builder.setPositiveButton(android.R.string.ok) { dialog, p1 ->
         }
-
         builder.setNegativeButton(android.R.string.cancel) { dialog, p1 ->
             dialog.cancel()
         }
@@ -210,18 +176,14 @@ class ChatListFragment : Fragment() {
                 }
 
                 if (isValid) {
-                    // do something
                     createChatRoom(email)
                     dialog.dismiss()
                 }
-
-
             }
     }
 
     private fun createChatRoom(userId: String) {
         model.createChatRoom(userId)
     }
-
 
 }
