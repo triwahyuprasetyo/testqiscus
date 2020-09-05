@@ -33,6 +33,11 @@ class ChatListFragment : Fragment() {
     private lateinit var linearLayoutManager: LinearLayoutManager
     private lateinit var adapterRecyclerView: ContactAdapter
     private lateinit var qiscusChatRoomList: MutableList<QiscusChatRoom>
+
+    interface OnItemClickListener {
+        fun onSelectCandidate(id: Int)
+    }
+
     private val callback = object : OnItemClickListener {
         override fun onSelectCandidate(idx: Int) {
             goToDetail(qiscusChatRoomList.get(idx))
@@ -59,6 +64,7 @@ class ChatListFragment : Fragment() {
         if (isChatRoomExistAndUpdateLastComment(event.qiscusComment)) {
             adapterRecyclerView.notifyDataSetChanged()
         } else {
+            //new incoming chat room
             if (!event.qiscusComment.senderEmail.equals(QiscusCore.getQiscusAccount().email)) {
                 model.createNewChatRoom(event.qiscusComment.senderEmail)
             }
@@ -75,10 +81,6 @@ class ChatListFragment : Fragment() {
             }
         }
         return exist
-    }
-
-    interface OnItemClickListener {
-        fun onSelectCandidate(id: Int)
     }
 
     override fun onCreateView(

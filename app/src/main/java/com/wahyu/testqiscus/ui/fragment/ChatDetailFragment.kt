@@ -8,6 +8,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.qiscus.sdk.chat.core.QiscusCore
 import com.qiscus.sdk.chat.core.data.model.QiscusChatRoom
@@ -20,6 +22,7 @@ import com.wahyu.testqiscus.ConstantVariable
 import com.wahyu.testqiscus.R
 import com.wahyu.testqiscus.Utils
 import com.wahyu.testqiscus.ui.adapter.MessageAdapter
+import com.wahyu.testqiscus.viewmodel.ChatDetailViewModel
 import kotlinx.android.synthetic.main.fragment_chat_detail.view.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -29,6 +32,10 @@ import rx.schedulers.Schedulers
 class ChatDetailFragment : Fragment() {
 
     private lateinit var fragmentActivity: FragmentActivity
+    private lateinit var linearLayoutManager: LinearLayoutManager
+    private lateinit var adapterRecyclerView: MessageAdapter
+    private lateinit var qiscusCommentList: MutableList<QiscusComment>
+    private val model: ChatDetailViewModel by viewModels()
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -45,15 +52,12 @@ class ChatDetailFragment : Fragment() {
         EventBus.getDefault().unregister(this)
     }
 
-    private lateinit var linearLayoutManager: LinearLayoutManager
-    private lateinit var adapterRecyclerView: MessageAdapter
-    private lateinit var qiscusCommentList: MutableList<QiscusComment>
-
     @Subscribe
     fun onMessageReceived(event: QiscusCommentReceivedEvent) {
         qiscusCommentList.add(event.qiscusComment)
         adapterRecyclerView.notifyDataSetChanged()
-        object : CountDownTimer(ConstantVariable.SPLASH_TIME, 2000) {//delay for testing
+        object : CountDownTimer(ConstantVariable.SPLASH_TIME, 2000) {
+            //delay for testing
             override fun onTick(m: Long) {}
             override fun onFinish() {
                 QiscusPusherApi.getInstance()
@@ -61,7 +65,7 @@ class ChatDetailFragment : Fragment() {
             }
         }.start()
 
-        qiscusChatRoom?.lastComment=event.qiscusComment
+        qiscusChatRoom?.lastComment = event.qiscusComment
         QiscusCore.getDataStore().addOrUpdate(qiscusChatRoom)
     }
 
@@ -126,11 +130,19 @@ class ChatDetailFragment : Fragment() {
 
         val context: Context = activity as Context
 
+        model.getStatusMessage().observe(viewLifecycleOwner, Observer<String> {
+            if (it.equals(ConstantVariable.SUCCESS)) {
+                Utils.showToast(context, "message send")
+            } else {
+                Utils.showToast(context, "unable send message")
+            }
+        })
+
         view.buttonSend.setOnClickListener {
             val text: String = view.editTextTextInput.text.toString().trim()
             if (text.isNotEmpty()) {
                 qiscusChatRoom?.let {
-                    sendMessage(text, qiscusChatRoom!!.id)
+                    model.sendMessage(text, qiscusChatRoom!!.id)
                     view.editTextTextInput.text.clear()
                 }
             } else {
@@ -149,11 +161,12 @@ class ChatDetailFragment : Fragment() {
         view.recyclerviewDetail.adapter = adapterRecyclerView
 
         qiscusChatRoom?.let {
-            if (it.lastComment!=null){
+            if (it.lastComment != null) {
                 qiscusCommentList.add(it.lastComment)
                 adapterRecyclerView.notifyDataSetChanged()
-                object : CountDownTimer(ConstantVariable.SPLASH_TIME, 2000) {//delay for testing
-                override fun onTick(m: Long) {}
+                object : CountDownTimer(ConstantVariable.SPLASH_TIME, 2000) {
+                    //delay for testing
+                    override fun onTick(m: Long) {}
                     override fun onFinish() {
                         QiscusPusherApi.getInstance()
                             .markAsRead(it.lastComment.roomId, it.lastComment.id)
@@ -165,16 +178,4 @@ class ChatDetailFragment : Fragment() {
         return view
     }
 
-    fun sendMessage(message: String, roomId: Long) {
-        val qiscusMessage: QiscusComment = QiscusComment.generateMessage(roomId, message)
-        QiscusApi.getInstance().sendMessage(qiscusMessage)
-            .subscribeOn(Schedulers.io()) // need to run this task on IO thread
-            .observeOn(AndroidSchedulers.mainThread()) // deliver result on main thread or UI thread
-            .subscribe({ chatRoom: QiscusComment? ->
-                println(ConstantVariable.SUCCESS)
-            }
-            ) { throwable: Throwable? ->
-                println(ConstantVariable.ERROR)
-            }
-    }
 }
