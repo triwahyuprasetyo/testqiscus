@@ -75,16 +75,19 @@ class ChatDetailFragment : Fragment() {
     @Subscribe
     fun onReceiveRoomEvent(roomEvent: QiscusChatRoomEvent) {
         when (roomEvent.event) {
+            QiscusChatRoomEvent.Event.TYPING -> {
+                qiscusChatRoom?.let {
+                    if (it.id == roomEvent.roomId) {
+                        if (roomEvent.isTyping) toolbar.subtitle =
+                            getString(R.string.is_typing).toString()
+                        else toolbar.subtitle = ""
+                    }
+                }
+            }
             QiscusChatRoomEvent.Event.DELIVERED -> {
-                roomEvent.roomId // this is the room id
-                roomEvent.user // this is the qiscus user id
-                roomEvent.commentId // the comment id was delivered
                 sendDelivered(roomEvent.commentId)
             }
             QiscusChatRoomEvent.Event.READ -> {
-                roomEvent.roomId // this is the room id
-                roomEvent.user // this is the qiscus user id
-                roomEvent.commentId // the comment id was read
                 sendReceive(roomEvent.commentId)
             }
         }
@@ -111,6 +114,7 @@ class ChatDetailFragment : Fragment() {
     }
 
     var qiscusChatRoom: QiscusChatRoom? = null
+    lateinit var toolbar: androidx.appcompat.widget.Toolbar
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -119,7 +123,8 @@ class ChatDetailFragment : Fragment() {
     ): View? {
         val view: View = inflater.inflate(R.layout.fragment_chat_detail, container, false)
 
-        view.toolbar.setNavigationOnClickListener(object : View.OnClickListener {
+        toolbar = view.toolbar
+        toolbar.setNavigationOnClickListener(object : View.OnClickListener {
             override fun onClick(v: View?) {
                 fragmentActivity.supportFragmentManager.popBackStack()
             }
@@ -127,7 +132,7 @@ class ChatDetailFragment : Fragment() {
 
         qiscusChatRoom = arguments?.get("qiscusChatRoom") as QiscusChatRoom?
         qiscusChatRoom?.let {
-            view.toolbar.title = it.name
+            toolbar.title = it.name
         }
         QiscusPusherApi.getInstance().subscribeChatRoom(qiscusChatRoom)
 
@@ -167,6 +172,20 @@ class ChatDetailFragment : Fragment() {
             if (it.lastComment != null) {
                 showAndManageLastComment(it.lastComment)
             }
+
+
+            view.editTextTextInput.onFocusChangeListener = object : View.OnFocusChangeListener {
+                override fun onFocusChange(v: View?, hasFocus: Boolean) {
+                    if (hasFocus) {
+                        //click edittext
+                        QiscusPusherApi.getInstance().publishTyping(qiscusChatRoom!!.id, true)
+                    } else {
+                        //close detail chat
+                        QiscusPusherApi.getInstance().publishTyping(qiscusChatRoom!!.id, false)
+                    }
+                }
+            }
+
         }
 
         return view

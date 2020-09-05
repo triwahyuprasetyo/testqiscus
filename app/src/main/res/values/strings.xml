@@ -12,4 +12,5 @@
     <string name="message_send">message send</string>
     <string name="unable_send_message">unable send message</string>
     <string name="title_dialog">Enter your friend\'s email address"</string>
+    <string name="is_typing">is typing...</string>
 </resources>
