@@ -176,8 +176,9 @@ class ChatListFragment : Fragment() {
     }
 
     fun showCreateCategoryDialog() {
-        val builder = AlertDialog.Builder(activity as Context)
-        builder.setTitle("Enter your friend's email address")
+        val context = activity as Context
+        val builder = AlertDialog.Builder(context)
+        builder.setTitle(context.getString(R.string.title_dialog))
         val view = layoutInflater.inflate(R.layout.dialog_new_contact, null)
         builder.setView(view)
         builder.setPositiveButton(android.R.string.ok) { dialog, p1 ->

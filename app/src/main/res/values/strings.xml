@@ -9,4 +9,7 @@
     <string name="message">Message</string>
     <string name="username_not_found">Username not found</string>
     <string name="message_alert">Can\'t send empty message</string>
+    <string name="message_send">message send</string>
+    <string name="unable_send_message">unable send message</string>
+    <string name="title_dialog">Enter your friend\'s email address"</string>
 </resources>
